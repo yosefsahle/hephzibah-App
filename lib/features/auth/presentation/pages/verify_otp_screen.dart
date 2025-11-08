@@ -1,0 +1,86 @@
+// lib/features/auth/presentation/pages/verify_otp_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hephzibah/features/auth/presentation/providers/auth_provider.dart';
+
+class VerifyOtpScreen extends ConsumerStatefulWidget {
+  final String phone;
+  final bool isRegistration;
+
+  const VerifyOtpScreen({
+    super.key,
+    required this.phone,
+    required this.isRegistration,
+  });
+
+  @override
+  ConsumerState<VerifyOtpScreen> createState() => _VerifyOtpScreenState();
+}
+
+class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
+  final _otpController = TextEditingController();
+
+  Future<void> _verifyOtp() async {
+    final code = _otpController.text.trim();
+
+    if (code.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter the OTP code')),
+      );
+      return;
+    }
+
+    try {
+      await ref
+          .read(authStateProvider.notifier)
+          .verifyOtpCode(widget.phone, code);
+
+      if (widget.isRegistration) {
+        // Proceed to registration form (step 2)
+        context.push('/register-form', extra: widget.phone);
+      } else {
+        // Proceed to password reset form
+        context.push('/reset-password', extra: widget.phone);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Invalid OTP: ${e.toString()}')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoading = ref.watch(authStateProvider).isLoading;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Verify OTP')),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Enter the OTP sent to ${widget.phone}',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _otpController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'OTP Code'),
+            ),
+            const SizedBox(height: 24),
+            isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _verifyOtp,
+                    child: const Text('Verify'),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+}
