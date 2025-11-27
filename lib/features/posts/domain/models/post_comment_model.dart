@@ -1,7 +1,7 @@
 import 'comment_reply_model.dart';
 
 class PostCommentModel {
-  final int id;
+  final String id;
   final String user;
   final String content;
   final DateTime createdAt;

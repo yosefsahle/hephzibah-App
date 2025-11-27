@@ -66,6 +66,32 @@ class AuthService {
     }
   }
 
+  Future<void> refreshtokens(String refreshToken) async {
+    final url = Uri.parse('$usersUrl/token/refresh/');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({"refresh": refreshToken}),
+    );
+
+    if (response.statusCode == 200) {
+      await _secureStorage.delete(key: _accessTokenKey);
+      await _secureStorage.delete(key: _refreshTokenKey);
+      final jsonData = jsonDecode(response.body);
+      final loginResponse = LoginResponse.fromJson(jsonData);
+
+      await _secureStorage.write(
+        key: _accessTokenKey,
+        value: loginResponse.access,
+      );
+      await _secureStorage.write(
+        key: _refreshTokenKey,
+        value: loginResponse.refresh,
+      );
+    }
+  }
+
   Future<String?> getAccessToken() async {
     return await _secureStorage.read(key: _accessTokenKey);
   }

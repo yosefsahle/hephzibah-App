@@ -2,7 +2,7 @@ import 'post_comment_model.dart';
 import 'post_media_model.dart';
 
 class PostModel {
-  final int id;
+  final String id;
   final String user;
   final String? group;
   final String postType;

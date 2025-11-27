@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hephzibah/core/providers/search_provider.dart';
+import 'package:hephzibah/core/theme/text_styles.dart';
 import 'package:hephzibah/features/posts/presentation/providers/post_provider.dart';
 import 'package:hephzibah/features/posts/presentation/widgets/post_list_view.dart';
 
@@ -35,7 +36,7 @@ class _PostScreenState extends ConsumerState<PostScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Posts'),
+        title: const Text('Posts', style: AppTextStyles.headlineSmall),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -45,6 +46,9 @@ class _PostScreenState extends ConsumerState<PostScreen>
             Tab(text: 'Videos'),
           ],
         ),
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
+        ],
       ),
       body: Column(
         children: [

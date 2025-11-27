@@ -3,13 +3,58 @@ import 'package:hephzibah/features/posts/domain/models/post_media_model.dart';
 import 'package:hephzibah/features/posts/domain/models/post_model.dart';
 import 'package:video_player/video_player.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   final PostModel post;
 
   const PostCard({super.key, required this.post});
 
   @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard>
+    with SingleTickerProviderStateMixin {
+  bool isLiked = false;
+  bool showHeart = false;
+  late AnimationController _heartController;
+
+  @override
+  void initState() {
+    super.initState();
+    _heartController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _heartController.dispose();
+    super.dispose();
+  }
+
+  void _toggleLike() {
+    setState(() {
+      isLiked = !isLiked;
+    });
+  }
+
+  void _onDoubleTapLike() {
+    if (!isLiked) {
+      _toggleLike();
+    }
+    setState(() => showHeart = true);
+    _heartController.forward(from: 0).then((_) {
+      setState(() => showHeart = false);
+    });
+  }
+
+  bool showFullText = false;
+
+  @override
   Widget build(BuildContext context) {
+    final post = widget.post;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -18,29 +63,61 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
+            // Post Title
             Text(
               post.title,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
-            if (post.description != null && post.description!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(post.description!),
-              ),
+            const SizedBox(height: 6),
 
-            // Media section
-            if (post.media.isNotEmpty) _buildMediaGrid(context),
+            // Description with Show More
+            if (post.description != null && post.description!.isNotEmpty)
+              _buildDescription(post.description!),
 
             const SizedBox(height: 8),
 
-            // Interactions row
+            // Media Section
+            if (post.media.isNotEmpty) _buildMediaGrid(post.media),
+
+            const SizedBox(height: 8),
+
+            // Interactions Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${post.likeCount} Likes'),
-                Text('${post.comments.length} Comments'),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : Colors.grey[600],
+                      ),
+                      onPressed: _toggleLike,
+                    ),
+                    const SizedBox(width: 4),
+                    Text('${post.likeCount + (isLiked ? 1 : 0)}'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.comment_outlined),
+                      onPressed: () {
+                        // Navigate to comments
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    Text('${post.comments.length}'),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      icon: const Icon(Icons.share_outlined),
+                      onPressed: () {
+                        // Share post
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           ],
@@ -49,12 +126,31 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMediaGrid(BuildContext context) {
-    final media = post.media;
+  Widget _buildDescription(String text) {
+    final maxLines = showFullText ? null : 2;
 
-    if (media.length == 1) {
-      return _buildSingleMedia(media.first);
-    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          text,
+          maxLines: maxLines,
+          overflow: showFullText ? TextOverflow.visible : TextOverflow.ellipsis,
+        ),
+        if (text.length > 100)
+          GestureDetector(
+            onTap: () => setState(() => showFullText = !showFullText),
+            child: Text(
+              showFullText ? 'Show Less' : 'Show More',
+              style: const TextStyle(color: Colors.blue),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildMediaGrid(List<PostMediaModel> media) {
+    if (media.length == 1) return _buildSingleMedia(media.first);
 
     return GridView.builder(
       itemCount: media.length,
@@ -74,22 +170,44 @@ class PostCard extends StatelessWidget {
   Widget _buildSingleMedia(PostMediaModel media) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: _buildMediaItem(media),
+      child: _buildMediaItem(media, isSingle: true),
     );
   }
 
-  Widget _buildMediaItem(PostMediaModel media) {
+  Widget _buildMediaItem(PostMediaModel media, {bool isSingle = false}) {
     switch (media.mediaType) {
       case 'image':
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            media.file ?? media.externalLink ?? '',
-            fit: BoxFit.cover,
-            height: 180,
-            width: double.infinity,
-            errorBuilder: (_, __, ___) =>
-                const Icon(Icons.broken_image, size: 80),
+        return GestureDetector(
+          onDoubleTap: _onDoubleTapLike,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  media.file ?? media.externalLink ?? '',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: isSingle ? 250 : 150,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.broken_image, size: 80),
+                ),
+              ),
+              if (showHeart)
+                ScaleTransition(
+                  scale: Tween(begin: 0.5, end: 1.5).animate(
+                    CurvedAnimation(
+                      parent: _heartController,
+                      curve: Curves.easeOut,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.favorite,
+                    color: Colors.white,
+                    size: 100,
+                  ),
+                ),
+            ],
           ),
         );
 
@@ -143,7 +261,9 @@ class _VideoPlayerPreviewState extends State<_VideoPlayerPreview> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: _controller.value.aspectRatio,
+      aspectRatio: _controller.value.isInitialized
+          ? _controller.value.aspectRatio
+          : 16 / 9,
       child: _controller.value.isInitialized
           ? VideoPlayer(_controller)
           : const Center(child: CircularProgressIndicator()),

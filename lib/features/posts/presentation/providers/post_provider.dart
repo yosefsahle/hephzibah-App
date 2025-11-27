@@ -15,7 +15,10 @@ final postListProvider =
     });
 
 /// Provider to fetch a single post by ID
-final postDetailProvider = FutureProvider.family<PostModel, int>((ref, postId) {
+final postDetailProvider = FutureProvider.family<PostModel, String>((
+  ref,
+  postId,
+) {
   return PostService.getPostDetail(postId);
 });
 

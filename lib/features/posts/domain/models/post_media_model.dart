@@ -1,5 +1,5 @@
 class PostMediaModel {
-  final int id;
+  final String id;
   final String mediaType;
   final String? file;
   final String? externalLink;

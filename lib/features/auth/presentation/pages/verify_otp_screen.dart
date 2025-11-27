@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/pages/verify_otp_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hephzibah/features/auth/presentation/providers/auth_provider.dart';
 
@@ -53,32 +54,54 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(authStateProvider).isLoading;
+    final colors = Theme.of(context).colorScheme;
+    final fontsize = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify OTP')),
+      appBar: AppBar(
+        title: Text(
+          'Verify OTP',
+          style: TextStyle(fontSize: fontsize.titleMedium?.fontSize),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Enter the OTP sent to ${widget.phone}',
-              textAlign: TextAlign.center,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset('assets/images/icons/verify.svg', width: 150),
+                const SizedBox(height: 20),
+                Text('Verification', style: fontsize.displayMedium),
+                Text(
+                  widget.isRegistration
+                      ? 'Verify to Start Registration'
+                      : 'Verify to Reset Password',
+                  style: TextStyle(color: colors.outline.withOpacity(0.5)),
+                ),
+                const SizedBox(height: 30),
+                TextField(
+                  controller: _otpController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'OTP Code'),
+                ),
+                const SizedBox(height: 24),
+                isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(
+                            double.infinity,
+                            55,
+                          ), // Sets minimum width to 150 and height to 40
+                        ),
+                        onPressed: _verifyOtp,
+                        child: const Text('Verify'),
+                      ),
+              ],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _otpController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'OTP Code'),
-            ),
-            const SizedBox(height: 24),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _verifyOtp,
-                    child: const Text('Verify'),
-                  ),
-          ],
+          ),
         ),
       ),
     );

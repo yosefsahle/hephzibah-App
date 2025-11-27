@@ -26,7 +26,9 @@ class PostService {
 
     final response = await http.get(
       uri,
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: token != null
+          ? {'Authorization': 'Bearer $token', 'Accept': 'application/json'}
+          : {'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {
@@ -37,11 +39,14 @@ class PostService {
     }
   }
 
-  static Future<PostModel> getPostDetail(int id) async {
+  static Future<PostModel> getPostDetail(String id) async {
     final String? token = await getAccessToken();
     final response = await http.get(
       Uri.parse('$postsUrl/posts/$id/'),
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      // headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: token != null
+          ? {'Authorization': 'Bearer $token', 'Accept': 'application/json'}
+          : {'Accept': 'application/json'},
     );
 
     if (response.statusCode == 200) {

@@ -42,7 +42,11 @@ class HorizontalPostCarousel extends StatelessWidget {
                   : null;
 
               return GestureDetector(
-                onTap: () => context.go('/posts/${post.id}'),
+                onTap: (() {
+                  context.push('/posts/${post.id}');
+                  print(post.id);
+                  print("This Is the post id as string");
+                }),
                 child: Container(
                   width: itemWidth,
                   margin: const EdgeInsets.only(right: 10),

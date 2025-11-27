@@ -40,6 +40,18 @@ class AuthStateNotifier extends StateNotifier<AsyncValue<LoginResponse?>> {
     }
   }
 
+  Future<void> refreshTokens(String refreshToken) async {
+    try {
+      state = const AsyncValue.loading();
+
+      final response = await _authService.refreshtokens(refreshToken);
+
+      state = AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
   Future<void> logout(String token) async {
     try {
       state = const AsyncValue.loading();

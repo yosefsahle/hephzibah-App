@@ -7,7 +7,9 @@ import 'package:hephzibah/features/auth/presentation/pages/send_otp_screen.dart'
 import 'package:hephzibah/features/auth/presentation/pages/verify_otp_screen.dart';
 import 'package:hephzibah/features/home/presentation/pages/home_screen.dart';
 import 'package:hephzibah/features/home/presentation/pages/main_screen.dart';
+import 'package:hephzibah/features/library/presentation/pages/library_data_page.dart';
 import 'package:hephzibah/features/library/presentation/pages/library_page.dart';
+import 'package:hephzibah/features/library/presentation/pages/middle_subcategory_page.dart';
 import 'package:hephzibah/features/onboarding/presentation/pages/onboarding_screen.dart';
 import 'package:hephzibah/features/posts/presentation/pages/post_detail_screen.dart';
 import 'package:hephzibah/features/splash/presentation/pages/splash_screen.dart';
@@ -87,7 +89,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/posts/:id',
         name: 'post_detail',
         builder: (context, state) {
-          final postId = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final postId = state.pathParameters['id']!;
           return PostDetailScreen(postId: postId);
         },
       ),
@@ -95,6 +97,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/library',
         name: 'library',
         builder: (context, state) => const Library(),
+      ),
+      // In your GoRouter configuration
+      GoRoute(
+        path: '/middle-categories',
+        name: 'middle-categories',
+        builder: (context, state) {
+          final topCategoryId = state.uri.queryParameters['topCategoryId']!;
+          final topCategoryName = state.uri.queryParameters['topCategoryName']!;
+          return MiddleSubCategoriesPage(
+            topCategoryId: topCategoryId,
+            topCategoryName: topCategoryName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/library-items',
+        name: 'library-items',
+        builder: (context, state) {
+          final subCategoryId = state.uri.queryParameters['subCategoryId']!;
+          final subCategoryName = state.uri.queryParameters['subCategoryName']!;
+          return LibraryItemsPage(
+            subCategoryId: subCategoryId,
+            subCategoryName: subCategoryName,
+          );
+        },
       ),
     ],
   );

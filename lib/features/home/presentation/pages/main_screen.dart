@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hephzibah/core/theme/color_scheme.dart';
+import 'package:hephzibah/features/groups/presentation/pages/group_list_page.dart';
 import 'package:hephzibah/features/home/presentation/pages/home_screen.dart';
 import 'package:hephzibah/features/home/presentation/providers/bottom_nav_provider.dart';
 import 'package:hephzibah/features/library/presentation/pages/library_page.dart';
@@ -14,19 +14,20 @@ class MainScreen extends ConsumerWidget {
     HomeScreen(),
     PostScreen(),
     Library(),
-    HomeScreen(),
+    GroupsListPage(),
     ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(bottomNavIndexProvider);
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: _screens[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: AppColors.lightPrimaryAccent,
-        unselectedItemColor: AppColors.lightSecondaryAccent,
+        selectedItemColor: colors.primary,
+        unselectedItemColor: colors.secondary,
         currentIndex: selectedIndex,
         onTap: (index) =>
             ref.read(bottomNavIndexProvider.notifier).state = index,

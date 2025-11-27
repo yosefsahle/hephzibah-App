@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hephzibah/features/auth/domain/models/registration_request_model.dart';
 import 'package:hephzibah/features/auth/presentation/providers/auth_provider.dart';
+import 'package:hephzibah/features/auth/presentation/widgets/custom_text_form_field.dart';
 import 'package:image_picker/image_picker.dart';
 
 class RegistrationFormScreen extends ConsumerStatefulWidget {
@@ -79,9 +80,14 @@ class _RegistrationFormScreenState
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(authStateProvider).isLoading;
-
+    final fontsize = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Account')),
+      appBar: AppBar(
+        title: Text(
+          'Registration Form',
+          style: TextStyle(fontSize: fontsize.titleMedium?.fontSize),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: AbsorbPointer(
@@ -90,6 +96,7 @@ class _RegistrationFormScreenState
             key: _formKey,
             child: Column(
               children: [
+                const SizedBox(height: 10),
                 GestureDetector(
                   onTap: _pickImage,
                   child: CircleAvatar(
@@ -102,25 +109,27 @@ class _RegistrationFormScreenState
                         : null,
                   ),
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
+                const Text('Tap to select profile image'),
+                const SizedBox(height: 30),
+                customTextFormFieldFn(
                   controller: _firstName,
-                  decoration: const InputDecoration(labelText: 'First Name'),
+                  labelText: 'First Name',
                   validator: (value) => value!.isEmpty ? 'Required' : null,
                 ),
-                TextFormField(
+                customTextFormFieldFn(
                   controller: _lastName,
-                  decoration: const InputDecoration(labelText: 'Last Name'),
+                  labelText: 'Last Name',
                   validator: (value) => value!.isEmpty ? 'Required' : null,
                 ),
-                TextFormField(
+                customTextFormFieldFn(
                   controller: _age,
-                  decoration: const InputDecoration(labelText: 'Age'),
-                  keyboardType: TextInputType.number,
+                  labelText: 'Age',
                   validator: (value) => value!.isEmpty ? 'Required' : null,
+                  keyboardType: TextInputType.number,
                 ),
+
                 DropdownButtonFormField<String>(
-                  value: _gender,
+                  initialValue: _gender,
                   decoration: const InputDecoration(labelText: 'Gender'),
                   items: const [
                     DropdownMenuItem(value: 'M', child: Text('Male')),
@@ -128,54 +137,133 @@ class _RegistrationFormScreenState
                   ],
                   onChanged: (val) => setState(() => _gender = val!),
                 ),
-                TextFormField(
+                const SizedBox(height: 16),
+                customTextFormFieldFn(
                   controller: _password,
-                  decoration: const InputDecoration(labelText: 'Password'),
+                  labelText: 'Password',
                   obscureText: true,
                   validator: (value) =>
                       value!.length < 6 ? 'Min 6 characters' : null,
                 ),
-                TextFormField(
+                customTextFormFieldFn(
                   controller: _email,
-                  decoration: const InputDecoration(
-                    labelText: 'Email (optional)',
-                  ),
+                  labelText: 'Email (optional)',
                 ),
-                TextFormField(
+                customTextFormFieldFn(
                   controller: _church,
-                  decoration: const InputDecoration(
-                    labelText: 'Church (optional)',
-                  ),
+                  labelText: 'Church (optional)',
                 ),
-                TextFormField(
+                customTextFormFieldFn(
                   controller: _location,
-                  decoration: const InputDecoration(
-                    labelText: 'Location (optional)',
-                  ),
+                  labelText: 'Location (optional)',
                 ),
-                TextFormField(
+                customTextFormFieldFn(
                   controller: _occupation,
-                  decoration: const InputDecoration(
-                    labelText: 'Occupation (optional)',
-                  ),
+                  labelText: 'Occupation (optional)',
                 ),
-                TextFormField(
+                customTextFormFieldFn(
                   controller: _bio,
-                  decoration: const InputDecoration(
-                    labelText: 'Bio (optional)',
-                  ),
+                  labelText: 'Bio (optional)',
                 ),
+
                 const SizedBox(height: 20),
                 isLoading
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(
+                            double.infinity,
+                            55,
+                          ), // Sets minimum width to 150 and height to 40
+                        ),
                         onPressed: _submit,
                         child: const Text('Register'),
                       ),
+                SizedBox(height: 30),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget customTextFormFieldFn({
+    required TextEditingController controller,
+    required String labelText,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Key? key,
+  }) {
+    final isRequired = validator != null;
+
+    Widget buildLabel() {
+      if (!isRequired) {
+        return Text(labelText);
+      }
+
+      return RichText(
+        text: TextSpan(
+          style: const TextStyle(color: Colors.black54, fontSize: 16),
+          children: [
+            TextSpan(text: labelText),
+            const TextSpan(
+              text: ' *',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (obscureText) {
+      final visibilityNotifier = ValueNotifier<bool>(false);
+
+      return ValueListenableBuilder<bool>(
+        valueListenable: visibilityNotifier,
+        builder: (context, isVisible, child) {
+          return Padding(
+            key: key,
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: TextFormField(
+              controller: controller,
+              // Text is obscured if isVisible is false
+              obscureText: !isVisible,
+              decoration: InputDecoration(
+                label: buildLabel(),
+                labelText: null, // Required when using 'label' property
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    isVisible ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    // Toggling the value notifies the ValueListenableBuilder to rebuild only this widget
+                    visibilityNotifier.value = !isVisible;
+                  },
+                ),
+              ),
+              validator: validator,
+              keyboardType: TextInputType.visiblePassword,
+            ),
+          );
+        },
+      );
+    }
+
+    // --- Standard Text Field Handling (Stateless) ---
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.only(bottom: 16.0), // Consistent spacing
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          label: buildLabel(), // Use the consolidated label builder
+          labelText: null, // Required when using 'label'
+        ),
+        validator: validator,
+        keyboardType: keyboardType,
+        obscureText: false,
       ),
     );
   }

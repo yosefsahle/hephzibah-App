@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hephzibah/features/auth/infrastructure/auth_service.dart';
+import 'package:hephzibah/features/auth/presentation/providers/auth_provider.dart';
 import '../../../../core/providers/locale_provider.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/providers/onboarding_provider.dart';
-import '../../../onboarding/presentation/pages/onboarding_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -26,6 +26,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final themeMode = await ref.read(asyncThemeModeProvider.future);
     final isFirstTime = await ref.read(isFirstTimeProvider.future);
     final loggedIn = await AuthService.isLoggedIn();
+    final refreshTOken = await AuthService.getRefreshToken();
 
     ref.read(localeProvider.notifier).state = locale;
     ref.read(themeModeProvider.notifier).state = themeMode;
@@ -37,6 +38,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (isFirstTime) {
       context.goNamed('onboarding');
     } else if (loggedIn) {
+      await ref.read(authStateProvider.notifier).refreshTokens(refreshTOken!);
+      // ignore: use_build_context_synchronously
       context.goNamed('home');
     } else {
       context.goNamed('login');

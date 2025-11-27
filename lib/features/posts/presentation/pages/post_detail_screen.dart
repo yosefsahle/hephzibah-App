@@ -6,7 +6,7 @@ import 'package:hephzibah/features/posts/presentation/providers/post_provider.da
 import '../widgets/post_card.dart';
 
 class PostDetailScreen extends ConsumerWidget {
-  final int postId;
+  final String postId;
 
   const PostDetailScreen({super.key, required this.postId});
 

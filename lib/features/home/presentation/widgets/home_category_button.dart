@@ -15,6 +15,7 @@ class HomeCategoryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(5),
       child: Row(
@@ -26,10 +27,10 @@ class HomeCategoryButton extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.amber,
+                color: colors.primary,
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Icon(button.icon, color: Colors.white),
+              child: Icon(button.icon, color: colors.onPrimary),
             ),
           );
         }).toList(),

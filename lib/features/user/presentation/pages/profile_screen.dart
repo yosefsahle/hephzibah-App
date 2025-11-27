@@ -1,6 +1,7 @@
 // features/user/presentation/pages/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hephzibah/core/theme/text_styles.dart';
 import 'package:hephzibah/features/user/presentation/providers/user_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -11,7 +12,9 @@ class ProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: const Text('Profile', style: AppTextStyles.headlineSmall),
+      ),
       body: profileAsync.when(
         data: (user) => Padding(
           padding: const EdgeInsets.all(16.0),
